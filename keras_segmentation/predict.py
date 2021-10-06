@@ -13,6 +13,7 @@ from .train import find_latest_checkpoint
 from .data_utils.data_loader import get_image_array, get_segmentation_array,\
     DATA_LOADER_SEED, class_colors, get_pairs_from_paths
 from .models.config import IMAGE_ORDERING
+from sklearn.metrics import confusion_matrix
 
 
 random.seed(DATA_LOADER_SEED)
@@ -290,6 +291,8 @@ def evaluate(model=None, inp_images=None, annotations=None,
     fp = np.zeros(model.n_classes)
     fn = np.zeros(model.n_classes)
     n_pixels = np.zeros(model.n_classes)
+    
+    confusion = np.zeros((model.n_classes, model.n_classes))
 
     for inp, ann in tqdm(zip(inp_images, annotations)):
         pr = predict(model, inp, read_image_type=read_image_type)
@@ -299,6 +302,8 @@ def evaluate(model=None, inp_images=None, annotations=None,
         gt = gt.argmax(-1)
         pr = pr.flatten()
         gt = gt.flatten()
+        
+        confusion += confusion_matrix(gt, pr)
 
         for cl_i in range(model.n_classes):
 
@@ -306,6 +311,8 @@ def evaluate(model=None, inp_images=None, annotations=None,
             fp[cl_i] += np.sum((pr == cl_i) * ((gt != cl_i)))
             fn[cl_i] += np.sum((pr != cl_i) * ((gt == cl_i)))
             n_pixels[cl_i] += np.sum(gt == cl_i)
+            
+            
 
     cl_wise_score = tp / (tp + fp + fn + 0.000000000001)
     n_pixels_norm = n_pixels / np.sum(n_pixels)
@@ -315,5 +322,6 @@ def evaluate(model=None, inp_images=None, annotations=None,
     return {
         "frequency_weighted_IU": frequency_weighted_IU,
         "mean_IU": mean_IU,
-        "class_wise_IU": cl_wise_score
+        "class_wise_IU": cl_wise_score,
+        "confusion_matrix": confusion
     }
