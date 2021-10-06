@@ -303,7 +303,7 @@ def evaluate(model=None, inp_images=None, annotations=None,
         pr = pr.flatten()
         gt = gt.flatten()
         
-        confusion += confusion_matrix(gt, pr)
+        confusion += confusion_matrix(gt, pr, labels=range(model.n_classes))
 
         for cl_i in range(model.n_classes):
 
