@@ -170,7 +170,7 @@ def get_image_array(image_input,
 
 
 def get_segmentation_array(image_input, nClasses,
-                           width, height, no_reshape=False, read_image_type=1, label_offset=0):
+                           width, height, no_reshape=False, read_image_type=1):
     """ Load segmentation array from input """
 
     seg_labels = np.zeros((height, width, nClasses))
@@ -197,7 +197,7 @@ def get_segmentation_array(image_input, nClasses,
     if not no_reshape:
         seg_labels = np.reshape(seg_labels, (width*height, nClasses))
 
-    return seg_labels + label_offset
+    return seg_labels
 
 
 def verify_segmentation_dataset(images_path, segs_path,
@@ -249,7 +249,7 @@ def image_segmentation_generator(images_path, segs_path, batch_size,
                                  augmentation_name="aug_all",
                                  custom_augmentation=None,
                                  other_inputs_paths=None, preprocessing=None,
-                                 read_image_type=cv2.IMREAD_COLOR , ignore_segs=False, label_offset=0 ):
+                                 read_image_type=cv2.IMREAD_COLOR , ignore_segs=False ):
     
 
     if not ignore_segs:
@@ -335,7 +335,7 @@ def image_segmentation_generator(images_path, segs_path, batch_size,
 
             if not ignore_segs:
                 Y.append(get_segmentation_array(
-                    seg, n_classes, output_width, output_height, label_offset=label_offset))
+                    seg, n_classes, output_width, output_height))
 
         if ignore_segs:
             yield np.array(X)
